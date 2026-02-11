@@ -4,6 +4,7 @@ using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 using PDVMercado.Models;
+using PDVMercado;
 using PDVMercado.Utils;
 
 namespace PDVMercado.Forms
