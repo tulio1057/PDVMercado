@@ -1,36 +1,37 @@
-﻿using Google.Cloud.Firestore;
-
-namespace SistemaMercado.Models
+namespace PDVMercado.Models
 {
-    [FirestoreData]
+    public enum TipoUsuario
+    {
+        Administrador,
+        Vendedor,
+        Gerente
+    }
+
     public class Usuario
     {
-        [FirestoreProperty]
-        public string Id { get; set; }
-
-        [FirestoreProperty]
-        public string Nome { get; set; }
-
-        [FirestoreProperty]
-        public string Email { get; set; }
-
-        [FirestoreProperty]
-        public string SenhaHash { get; set; }
-
-        [FirestoreProperty]
-        public string NivelAcesso { get; set; } // "Caixa", "Gerente", "Admin"
-
-        [FirestoreProperty]
+        public string Id { get; set; } = string.Empty;
+        public string Login { get; set; } = string.Empty;
+        public string Senha { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public TipoUsuario Tipo { get; set; }
         public bool Ativo { get; set; }
-
-        [FirestoreProperty]
         public DateTime DataCadastro { get; set; }
-
-        [FirestoreProperty]
         public DateTime? UltimoAcesso { get; set; }
+        
+        // Alias para compatibilidade
+        public string SenhaHash => Senha;
+        
+        // Métodos de permissão
+        public bool TemPermissaoAdmin() => Tipo == TipoUsuario.Administrador;
+        public bool TemPermissaoGerente() => Tipo == TipoUsuario.Gerente || Tipo == TipoUsuario.Administrador;
+        public bool TemPermissaoCaixa() => Ativo;
 
-        public bool TemPermissaoCaixa => Ativo && (NivelAcesso == "Caixa" || NivelAcesso == "Gerente" || NivelAcesso == "Admin");
-        public bool TemPermissaoGerente => Ativo && (NivelAcesso == "Gerente" || NivelAcesso == "Admin");
-        public bool TemPermissaoAdmin => Ativo && NivelAcesso == "Admin";
+        public Usuario()
+        {
+            Id = Guid.NewGuid().ToString();
+            DataCadastro = DateTime.Now;
+            Ativo = true;
+        }
     }
 }

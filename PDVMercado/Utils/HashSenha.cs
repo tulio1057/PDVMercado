@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace SistemaMercado.Utils
+namespace PDVMercado.Utils
 {
     public static class HashSenha
     {

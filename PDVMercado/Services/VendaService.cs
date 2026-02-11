@@ -1,9 +1,9 @@
-﻿using SistemaMercado.Data;
-using SistemaMercado.Models;
+using PDVMercado.Data;
+using PDVMercado.Models;
 using Google.Cloud.Firestore;
 using System.Transactions;
 
-namespace SistemaMercado.Services
+namespace PDVMercado.Services
 {
     public class VendaService
     {
@@ -25,7 +25,7 @@ namespace SistemaMercado.Services
                 foreach (var item in venda.Itens)
                 {
                     var produto = await _produtoService.BuscarPorIdAsync(item.ProdutoId);
-                    if (produto == null || !produto.PodeSerVendido)
+                    if (produto == null || !produto.PodeSerVendido()) // ✅ CORRIGIDO: Adicionado ()
                         throw new Exception($"Produto {item.ProdutoNome} não disponível");
 
                     if (produto.Estoque < item.Quantidade)
@@ -35,13 +35,14 @@ namespace SistemaMercado.Services
                 // Atualizar estoque
                 foreach (var item in venda.Itens)
                 {
-                    await _produtoService.AtualizarEstoqueAsync(item.ProdutoId, -item.Quantidade);
+                    await _produtoService.AtualizarEstoqueAsync(item.ProdutoId, (int)-item.Quantidade); // ✅ CORRIGIDO: Conversão para int
                 }
 
-                // Gerar número da nota
-                venda.NumeroNota = GerarNumeroNota();
+                // Gerar número da venda e nota
+                venda.NumeroVenda = GerarNumeroSequencial();
+                venda.NumeroNota = venda.NumeroVenda; // NumeroNota = NumeroVenda
                 venda.DataVenda = DateTime.Now;
-                venda.Status = "Pendente";
+                venda.Status = StatusVenda.EmAndamento; // ✅ CORRIGIDO: Usar enum ao invés de string
 
                 // Salvar venda
                 var collection = _firestoreDb.Collection("vendas");
@@ -57,7 +58,7 @@ namespace SistemaMercado.Services
             }
         }
 
-        public async Task<bool> FinalizarVendaAsync(string vendaId, decimal valorPago, string formaPagamento)
+        public async Task<bool> FinalizarVendaAsync(string vendaId, decimal valorPago, FormaPagamento formaPagamento) // ✅ CORRIGIDO: Tipo FormaPagamento
         {
             try
             {
@@ -70,12 +71,12 @@ namespace SistemaMercado.Services
                 var venda = snapshot.ConvertTo<Venda>();
                 venda.Id = snapshot.Id;
 
-                if (venda.EstaPaga || venda.EstaCancelada)
+                if (venda.EstaPaga() || venda.EstaCancelada()) // ✅ CORRIGIDO: Adicionado ()
                     return false;
 
                 venda.ValorPago = valorPago;
-                venda.FormaPagamento = formaPagamento;
-                venda.Status = "Pago";
+                venda.FormaPagamento = formaPagamento; // ✅ CORRIGIDO: Agora é enum
+                venda.Status = StatusVenda.Finalizada; // ✅ CORRIGIDO: Usar enum
                 venda.DataPagamento = DateTime.Now;
                 venda.CalcularTotais();
 
@@ -101,16 +102,16 @@ namespace SistemaMercado.Services
                 var venda = snapshot.ConvertTo<Venda>();
                 venda.Id = snapshot.Id;
 
-                if (venda.EstaPaga || venda.EstaCancelada)
+                if (venda.EstaPaga() || venda.EstaCancelada()) // ✅ CORRIGIDO: Adicionado ()
                     return false;
 
                 // Restaurar estoque
                 foreach (var item in venda.Itens)
                 {
-                    await _produtoService.AtualizarEstoqueAsync(item.ProdutoId, item.Quantidade);
+                    await _produtoService.AtualizarEstoqueAsync(item.ProdutoId, (int)item.Quantidade); // ✅ CORRIGIDO: Conversão para int
                 }
 
-                venda.Status = "Cancelado";
+                venda.Status = StatusVenda.Cancelada; // ✅ CORRIGIDO: Usar enum
                 await docRef.SetAsync(venda, SetOptions.MergeAll);
 
                 return true;
@@ -126,7 +127,8 @@ namespace SistemaMercado.Services
             var collection = _firestoreDb.Collection("vendas");
             var query = collection.WhereGreaterThanOrEqualTo("DataVenda", inicio)
                                  .WhereLessThanOrEqualTo("DataVenda", fim)
-                                 .WhereEqualTo("Status", "Pago");
+                                 .WhereEqualTo("Status", StatusVenda.Finalizada.ToString()); // ✅ CORRIGIDO: Conversão de enum para string
+
             var snapshot = await query.GetSnapshotAsync();
 
             var vendas = new List<Venda>();
@@ -140,11 +142,13 @@ namespace SistemaMercado.Services
             return vendas.OrderByDescending(v => v.DataVenda).ToList();
         }
 
-        private string GerarNumeroNota()
+        private int GerarNumeroSequencial()
         {
-            var random = new Random();
-            var numero = DateTime.Now.ToString("yyyyMMddHHmmss") + random.Next(100, 999).ToString();
-            return numero;
+            // Gera número baseado em timestamp (sem parte aleatória para evitar duplicatas)
+            var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+            // Pega os últimos 9 dígitos para garantir que caiba em int
+            var numero = timestamp.Substring(timestamp.Length - 9);
+            return int.Parse(numero);
         }
     }
 }

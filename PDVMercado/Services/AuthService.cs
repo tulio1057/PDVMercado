@@ -1,19 +1,19 @@
-﻿using SistemaMercado.Data;
-using SistemaMercado.Models;
+using PDVMercado.Data;
+using PDVMercado.Models;
 using Google.Cloud.Firestore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BCryptNet = BCrypt.Net.BCrypt;
 
-namespace SistemaMercado.Services
+namespace PDVMercado.Services
 {
     public class AuthService
     {
         private readonly FirestoreDb _firestoreDb;
-        private Usuario _usuarioLogado;
+        private Usuario? _usuarioLogado; // ✅ CORRIGIDO: Campo anulável
 
-        public Usuario UsuarioLogado => _usuarioLogado;
+        public Usuario? UsuarioLogado => _usuarioLogado; // ✅ CORRIGIDO: Propriedade anulável
         public bool EstaLogado => _usuarioLogado != null;
 
         public AuthService()
@@ -98,9 +98,9 @@ namespace SistemaMercado.Services
 
             return nivelRequerido switch
             {
-                "Admin" => _usuarioLogado.TemPermissaoAdmin,
-                "Gerente" => _usuarioLogado.TemPermissaoGerente,
-                "Caixa" => _usuarioLogado.TemPermissaoCaixa,
+                "Admin" => _usuarioLogado.TemPermissaoAdmin(), // ✅ CORRIGIDO: Adicionado ()
+                "Gerente" => _usuarioLogado.TemPermissaoGerente(), // ✅ CORRIGIDO: Adicionado ()
+                "Caixa" => _usuarioLogado.TemPermissaoCaixa(), // ✅ CORRIGIDO: Adicionado ()
                 _ => false
             };
         }

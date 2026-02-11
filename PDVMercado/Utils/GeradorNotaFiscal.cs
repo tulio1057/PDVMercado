@@ -1,13 +1,13 @@
-﻿using SistemaMercado.Models;
+using PDVMercado.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace SistemaMercado.Utils
+namespace PDVMercado.Utils
 {
     public static class GeradorNotaFiscal
     {
-        public static void Gerar(Venda venda, string caminhoArquivo = null)
+        public static void Gerar(Venda venda, string? caminhoArquivo = null) // ✅ CORRIGIDO: Parâmetro anulável
         {
             QuestPDF.Settings.License = LicenseType.Community;
 
@@ -85,9 +85,10 @@ namespace SistemaMercado.Utils
                                 totalTable.Cell().AlignRight().Text(venda.ValorTotal.ToString("C2"));
 
                                 totalTable.Cell().Text("Forma de Pagamento:").SemiBold();
-                                totalTable.Cell().AlignRight().Text(venda.FormaPagamento);
+                                totalTable.Cell().AlignRight().Text(venda.FormaPagamento.ToString()); // ✅ CORRIGIDO: ToString() no enum
 
-                                if (venda.FormaPagamento == "Dinheiro")
+                                // ✅ CORRIGIDO: Comparação com enum ao invés de string
+                                if (venda.FormaPagamento == FormaPagamento.Dinheiro)
                                 {
                                     totalTable.Cell().Text("Valor Pago:").SemiBold();
                                     totalTable.Cell().AlignRight().Text(venda.ValorPago.ToString("C2"));

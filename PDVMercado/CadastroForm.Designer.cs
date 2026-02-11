@@ -1,6 +1,6 @@
 namespace PDVMercado
 {
-    partial class FechamentoForm
+    partial class CadastroForm
     {
         /// <summary>
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace PDVMercado
             this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "Fechamento de Venda";
+            this.Text = "Cadastro de Produtos";
         }
 
         #endregion

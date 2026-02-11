@@ -1,58 +1,57 @@
-﻿using Google.Cloud.Firestore;
-
-namespace SistemaMercado.Models
+namespace PDVMercado.Models
 {
-    [FirestoreData]
     public class Produto
     {
-        [FirestoreProperty]
-        public string Id { get; set; }
-
-        [FirestoreProperty]
-        public string Codigo { get; set; }
-
-        [FirestoreProperty]
-        public string Nome { get; set; }
-
-        [FirestoreProperty]
-        public string Descricao { get; set; }
-
-        [FirestoreProperty]
-        public decimal Preco { get; set; }
-
-        [FirestoreProperty]
-        public decimal Custo { get; set; }
-
-        [FirestoreProperty]
-        public int Estoque { get; set; }
-
-        [FirestoreProperty]
+        public string Id { get; set; } = string.Empty;
+        public string Codigo { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
+        public string Descricao { get; set; } = string.Empty;
+        
+        // Preços
+        public decimal PrecoVenda { get; set; }  // Era: Preco
+        public decimal PrecoCusto { get; set; }  // Era: Custo
+        
+        // Estoque
+        public int EstoqueAtual { get; set; }    // Era: Estoque
+        public int EstoqueMinimo { get; set; }
+        
+        public string Unidade { get; set; } = "UN";  // Era: UnidadeMedida
+        public string CodigoBarras { get; set; } = string.Empty;
+        public string Categoria { get; set; } = string.Empty;
         public bool Ativo { get; set; }
-
-        [FirestoreProperty]
         public DateTime DataCadastro { get; set; }
-
-        [FirestoreProperty]
-        public DateTime? DataAtualizacao { get; set; }
-
-        [FirestoreProperty]
-        public string Categoria { get; set; }
-
-        [FirestoreProperty]
-        public string UnidadeMedida { get; set; }
-
-        public bool PodeSerVendido => Ativo && Estoque > 0;
-
-        public void DecrementarEstoque(int quantidade)
+        public DateTime? DataAlteracao { get; set; }
+        
+        // Propriedades adicionais necessárias para Services
+        public int Estoque  // Alias para compatibilidade
         {
-            if (quantidade <= 0)
-                throw new ArgumentException("Quantidade deve ser maior que zero");
+            get => EstoqueAtual;
+            set => EstoqueAtual = value;
+        }
+        public DateTime? DataAtualizacao { get; set; }
+        
+        // Métodos de validação
+        public bool PodeSerVendido() => Ativo && EstoqueAtual > 0;
 
-            if (Estoque < quantidade)
-                throw new InvalidOperationException("Estoque insuficiente");
-
-            Estoque -= quantidade;
+        public Produto()
+        {
+            Id = Guid.NewGuid().ToString();
+            DataCadastro = DateTime.Now;
             DataAtualizacao = DateTime.Now;
+            Ativo = true;
+            EstoqueMinimo = 0;
+            EstoqueAtual = 0;
+        }
+
+        public decimal CalcularLucro()
+        {
+            return PrecoVenda - PrecoCusto;
+        }
+
+        public decimal CalcularMargemLucro()
+        {
+            if (PrecoCusto <= 0) return 0;
+            return ((PrecoVenda - PrecoCusto) / PrecoCusto) * 100;
         }
     }
 }

@@ -1,28 +1,36 @@
-﻿namespace SistemaMercado.Models
+namespace PDVMercado.Models
 {
-    public static class FormaPagamento
+    public enum FormaPagamento
     {
-        public const string Dinheiro = "Dinheiro";
-        public const string CartaoCredito = "Cartão Crédito";
-        public const string CartaoDebito = "Cartão Débito";
-        public const string Pix = "PIX";
-        public const string ValeAlimentacao = "Vale Alimentação";
+        Dinheiro,
+        CartaoCredito,
+        CartaoDebito,
+        Pix,  // Era: PIX - agora é Pix
+        Boleto,
+        Cheque,
+        Outros
+    }
 
-        public static List<string> ObterTodas()
+    public static class FormaPagamentoExtensions
+    {
+        public static string ObterDescricao(this FormaPagamento forma)
         {
-            return new List<string>
+            return forma switch
             {
-                Dinheiro,
-                CartaoCredito,
-                CartaoDebito,
-                Pix,
-                ValeAlimentacao
+                FormaPagamento.Dinheiro => "Dinheiro",
+                FormaPagamento.CartaoCredito => "Cartão de Crédito",
+                FormaPagamento.CartaoDebito => "Cartão de Débito",
+                FormaPagamento.Pix => "PIX",
+                FormaPagamento.Boleto => "Boleto",
+                FormaPagamento.Cheque => "Cheque",
+                FormaPagamento.Outros => "Outros",
+                _ => "Não especificado"
             };
         }
 
-        public static bool RequerTroco(string formaPagamento)
+        public static bool PrecisaTroco(this FormaPagamento forma)
         {
-            return formaPagamento == Dinheiro;
+            return forma == FormaPagamento.Dinheiro;
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using SistemaMercado.Data;
-using SistemaMercado.Models;
+﻿using PDVMercado.Data;
+using PDVMercado.Models;
 using Google.Cloud.Firestore;
 
-namespace SistemaMercado.Services
+namespace PDVMercado.Services
 {
     public class ProdutoService
     {

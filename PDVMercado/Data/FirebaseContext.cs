@@ -1,9 +1,9 @@
 ﻿using Google.Cloud.Firestore;
 using PDVMercado;
-using SistemaMercado;
+using PDVMercado;
 using Microsoft.Extensions.Configuration;
 
-namespace SistemaMercado.Data
+namespace PDVMercado.Data
 {
     public class FirebaseContext
     {
